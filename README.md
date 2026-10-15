@@ -46,4 +46,4 @@ Run each script either by opening it in RStudio, or from a terminal with `Rscrip
 
 ## Methods reference
 
-The full mathematical formulation of each method (clustering, transition matrices, Monte Carlo sampling, CRITIC, MABAC, Entropy, TOPSIS) is in the paper's Supplementary Material.
+The full mathematical formulation of each method (clustering, transition matrices, Monte Carlo sampling, scenario evaluation metrics, criteria normalization, CRITIC, MABAC, Entropy, TOPSIS, wind speed data processing) is in the paper's Supplementary Material.
