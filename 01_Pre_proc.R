@@ -21,10 +21,10 @@ data_dir  <- file.path(root_dir, "00_Data", "Processed")
 files <- list.files(ninja_dir, pattern = "\\.xlsx$", full.names = TRUE)
 file_names <- tools::file_path_sans_ext(basename(files))
 
-# Reads one raw file and extracts the third column (wind speed)
+# Reads one raw file and extracts the wind speed column
 read_xlsx_file <- function(file_path) {
   xlsx_data <- read_excel(file.path(file_path))
-  return(xlsx_data[, 3])
+  return(xlsx_data[, "Wind_speed"])
 }
 
 # Applies the function to every file and builds a list of vectors

@@ -1,20 +1,9 @@
 ############# Packages ################################################
 
 {
-  if (!require("here")) install.packages("here", dependencies=TRUE)
-  if (!require("readxl")) install.packages("readxl", dependencies=TRUE)
-  if (!require("openxlsx")) install.packages("openxlsx", dependencies=TRUE)
-  if (!require("lubridate")) install.packages("lubridate", dependencies=TRUE)
-  if (!require("tibble")) install.packages("tibble", dependencies=TRUE)
-  if (!require("tidyr")) install.packages("tidyr", dependencies=TRUE)
   if (!require("dplyr")) install.packages("dplyr", dependencies=TRUE)
   if (!require("tseries")) install.packages("tseries", dependencies=TRUE)
-  if (!require("lmtest")) install.packages("lmtest", dependencies=TRUE)
   if (!require("ggplot2")) install.packages("ggplot2", dependencies=TRUE)
-  if (!require("ggseas")) install.packages("ggplot2", dependencies=TRUE)
-  if (!require("urca")) install.packages("urca", dependencies=TRUE)
-  if (!require("forecast")) install.packages("forecast", dependencies=TRUE)
-  if (!require("moments")) install.packages("moments", dependencies=TRUE)
 }
 
 #### Read data ##########################################################
@@ -200,7 +189,6 @@ for (i in 1:length(municip)) {
                linetype = "dashed", size = 0.8) +  
     theme_minimal() + 
     labs(x = "Month", y = "Wind Speed (m/s)", color = "Legend") +
-    #labs(x = "Month", y = NULL, color = "Legend") +
     scale_y_continuous(breaks = seq(3, 12, by = 1), limits = c(3, 12)) +
     scale_color_manual(values = c("Total average" = "darkgreen")) +  
     labs(title = names[i])+
@@ -213,11 +201,10 @@ for (i in 1:length(municip)) {
       axis.ticks = element_line(color = "gray60", size = 0.8),
       legend.title = element_blank(), 
       legend.text = element_text(size = 12),
-      #legend.position = "bottom"
       legend.position = "none"
     )
   
-  filename <- file.path(data_dir, paste0(names[i], ".png"))
+  filename <- file.path(data_dir, paste0(gsub(" ", "_", names[i]), "_box.png"))
   ggsave(filename, plot = graphic, width = 6.5, height = 4, dpi = 300)
 
 }
@@ -229,7 +216,7 @@ num_stationary <- 0
 for (i in 3:ncol(tseries)) {  
   result <- adf.test(tseries[[i]])  
 
-  if (result$p.value < 0.1) {
+  if (result$p.value < 0.05) {
     num_stationary <- num_stationary + 1  
   }
 }
@@ -272,7 +259,7 @@ all_fut_scenarios<-readRDS(file.path(simulation_dir, "Future_scenarios.RData"))
 
 municip<-c("2414407","2406502","2400505") # code 
 names<-c("Touros", "Lagoa Nova", "Alexandria")
-place<-c(1903,847,55)
+place <- 12*(match(municip, colnames(tseries)[-(1:2)]) - 1) + 7 # July of each municipality
 
 for (i in 1:length(names)) {
   historical<-clusters[[place[i]]]
@@ -305,7 +292,6 @@ for (i in 1:length(names)) {
     theme(
       plot.title = element_text(size = 22, hjust = 0),
       legend.position = "bottom",
-      #legend.position = "none",
       legend.title = element_blank(),  
       legend.text = element_text(size = 20), 
       panel.grid = element_blank(),         
@@ -315,7 +301,7 @@ for (i in 1:length(names)) {
       axis.ticks = element_line(color = "gray60", size = 0.8)
     )
   
-  filename <- file.path(simulation_dir, paste0(names[i], "_Freq.png"))
+  filename <- file.path(simulation_dir, paste0(gsub(" ", "_", names[i]), "_Freq.png"))
   ggsave(filename, plot = graphic, width = 6, height = 4.5, dpi = 300)
 
 }
@@ -554,7 +540,6 @@ for (i in 1:length(names)) {
     scale_y_continuous(breaks = seq(yaxis_min[i], yaxis_max[i], by = 1), limits = c(yaxis_min[i], yaxis_max[i])) +
     labs(title = names[i], x = "Month", y = "Wind Speed (m/s)") +
     scale_fill_manual(values = c("Scenarios" = "gray70")) +  
-    #scale_linetype_manual(values = c("Av. forecast" = "dashed")) +  
     scale_color_manual(
       values = c("Out-of-sample" = "darkgreen","95% prediction interval" = "gray30", "Av. forecast"="gray40"),
       labels = c("95% prediction interval" = "95% pred. interval"),
@@ -573,7 +558,7 @@ for (i in 1:length(names)) {
       legend.key.width = unit(1, "cm")
     ) 
   
-  filename <- file.path(simulation_dir, "Without_last_year", paste0(names[i], "_Cloud.png"))
+  filename <- file.path(simulation_dir, "Without_last_year", paste0(gsub(" ", "_", names[i]), "_Cloud.png"))
   ggsave(filename, plot = graphic, width = 7, height = 5, dpi = 300)
 
 }

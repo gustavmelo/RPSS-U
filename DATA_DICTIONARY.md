@@ -30,7 +30,9 @@ All wind criteria are benefit-type (higher wind speed = better site).
 | `Elec_Access` (g4) | SDG 7: Affordable and Clean Energy (7.1) | Population with access to electricity | Share of permanent private households with electricity from a distribution company (%) | Direct | Min (cost) |
 | `Employment` (g5) | SDG 8: Decent Work and Economic Growth (8.5) | Unemployment rate | Share of the total population in employment (%) | Proxy | Min (cost) |
 | `Natural_Forest` (g6) | SDG 15: Life on Land (15.1) | Forest area as a proportion of total land area | Share of the municipal area covered by natural forests (%) | Direct | Min (cost) |
-| `Protected_Area` (g7) | SDG 15: Life on Land | Important biodiversity sites covered by protected areas | Share of the municipal area demarcated as nature conservation units (%) | Proxy | Min (cost) |
+| `Protected_Area` (g7) | SDG 15: Life on Land (15.1) | Important biodiversity sites covered by protected areas | Share of the municipal area demarcated as nature conservation units (%) | Proxy | Min (cost) |
+
+**Units**: criteria in percentage (%) are stored as proportions (0–1) in `00_Data/Processed/SDG_Criteria.csv`.
 
 **Type**: `Direct` means the criterion corresponds directly to the official SDG indicator; `Proxy` means it is an indirect measure used due to limited public data availability at the municipal level.
 
@@ -40,13 +42,13 @@ All wind criteria are benefit-type (higher wind speed = better site).
 
 | Raw column name | Renamed to |
 |---|---|
-| `Porcentage of population living with at most 1/2 minimum wage (%)` | g1: Low_Income_Pop |
+| `Percentage of population living with at most 1/2 minimum wage (%)` | g1: Low_Income_Pop |
 | `Employed population (%)` | g5: Employment |
 | `Natural forests (%)` | g6: Natural_Forest |
 | `Households with access to electric energy (%)` | g4: Elec_Access |
 | `Planted or destined to harvest area (%)` | g2: Harvest_Area |
-| `Maximum capcacity of reservoirs (m^3)` | g3: Reservoir_Cap |
-| `Nature conservation unit demarcated area(%)` | g7: Protected_Area |
+| `Maximum capacity of reservoirs (m^3)` | g3: Reservoir_Cap |
+| `Nature conservation unit demarcated area (%)` | g7: Protected_Area |
 
 ## Sources
 

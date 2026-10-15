@@ -3,8 +3,6 @@
 {
   if (!require("dplyr")) install.packages("dplyr", dependencies=TRUE)
   if (!require("ggplot2")) install.packages("ggplot2", dependencies=TRUE)
-  if (!require("moments")) install.packages("moments", dependencies=TRUE)
-  if (!require("tidyr")) install.packages("tidyr", dependencies=TRUE)
   if (!require("scales")) install.packages("scales", dependencies=TRUE)
 }
 
@@ -29,7 +27,7 @@ sdg_criteria<-read.csv(file.path(data_dir, "SDG_Criteria.csv"), check.names = FA
 number_scenarios<-1000 # Number of scenarios previously simulated
 horizon<-12 # Scenario horizon previously simulated
 
-###### ODS + wind version ######
+###### SDG + wind version ######
 
 critic_weights<-list()
 critic_mabac_results<-list()
@@ -42,14 +40,12 @@ for (i in 1:number_scenarios) {
     wind_scenario <- data.frame(sapply(all_fut_scenarios, function(df) df[(((i - 1)*horizon)+1):(i*horizon), 4]))
     colnames(wind_scenario) <- sub("^X", "", colnames(wind_scenario))
 
-    #colnames(wind_scenario) <- paste0("municip", 1:length(all_fut_scenarios))
     wind_scenario <- as.data.frame(t(wind_scenario))
     colnames(wind_scenario) <- paste0("wind_", 1:horizon)
     wind_scenario$Code <- as.numeric(rownames(wind_scenario))
 
     case <- merge(sdg_criteria, wind_scenario, by = "Code", all.x = TRUE)
 
-    #case <- cbind(sdg_criteria, wind_scenario)
     case <- case %>%
       mutate(across(3:21, as.numeric))
 
@@ -98,7 +94,6 @@ for (i in 1:number_scenarios) {
     ########################## MABAC ##############################
 
     # Step 1: Use the normalized decision matrix from the CRITIC method
-    # (Assuming `normalized_criteria` and `critic_weights` are available from the previous step)
 
     # Step 2: Compute the weighted matrix
     weighted_matrix <- as.data.frame(sapply(1:ncol(normalized_criteria), function(k) {
@@ -174,7 +169,7 @@ for (i in 1:number_scenarios) {
 
     ########################## TOPSIS ##############################
 
-    # Weighted normalized matrix (no +1 offset — TOPSIS uses standard weighted values)
+    # Weighted normalized matrix (without the +1 offset used in MABAC)
     weighted_topsis <- as.data.frame(sapply(1:ncol(normalized_criteria), function(k) {
       normalized_criteria[[k]] * critic_weights[[i]]$Weight[k]
     }))
@@ -210,13 +205,13 @@ for (i in 1:number_scenarios) {
 ### SDGs - Distribution
 
 rename_dict <- c(
-  "Porcentage of population living with at most 1/2 minimum wage (%)" = "g1: Low_Income_Pop (%)",
+  "Percentage of population living with at most 1/2 minimum wage (%)" = "g1: Low_Income_Pop (%)",
   "Employed population (%)" = "g5: Employment (%)",
   "Natural forests (%)" = "g6: Natural_Forest (%)",
   "Households with access to electric energy (%)" = "g4: Elec_Access (%)",
   "Planted or destined to harvest area (%)" = "g2: Harvest_Area (%)",
-  "Maximum capcacity of reservoirs (m^3)" = "g3: Reservoir_Cap (m³)",
-  "Nature conservation unit demarcated area(%)" = "g7: Protected_Area (%)"
+  "Maximum capacity of reservoirs (m^3)" = "g3: Reservoir_Cap (m³)",
+  "Nature conservation unit demarcated area (%)" = "g7: Protected_Area (%)"
 )
 
 sdg_criteria_2 <- sdg_criteria
@@ -269,13 +264,13 @@ summary(wind_weight)
 ### Weights distribution
 
 rename_dict <- c(
-  "Porcentage of population living with at most 1/2 minimum wage (%)" = "g1: Low_Income_Pop",
+  "Percentage of population living with at most 1/2 minimum wage (%)" = "g1: Low_Income_Pop",
   "Employed population (%)" = "g5: Employment",
   "Natural forests (%)" = "g6: Natural_Forest",
   "Households with access to electric energy (%)" = "g4: Elec_Access",
   "Planted or destined to harvest area (%)" = "g2: Harvest_Area",
-  "Maximum capcacity of reservoirs (m^3)" = "g3: Reservoir_Cap",
-  "Nature conservation unit demarcated area(%)" = "g7: Protected_Area",
+  "Maximum capacity of reservoirs (m^3)" = "g3: Reservoir_Cap",
+  "Nature conservation unit demarcated area (%)" = "g7: Protected_Area",
   "wind_1" = "g8: Wind_Jan",
   "wind_2" = "g9: Wind_Feb",
   "wind_3" = "g10: Wind_Mar",
@@ -328,7 +323,7 @@ graphic<-ggplot(df_combined, aes(x = Criteria, y = Weight)) +
 filename <- file.path(indicator_dir, "CRITIC_MABAC", "DistributionWeights.png")
 ggsave(filename, plot = graphic, width = 7.5, height = 5, dpi = 300)
 
-### Sort each dataframe within the list in ascending order of Score
+### Sort each dataframe within the list in descending order of Score
 
 sorted_critic_mabac_results <- lapply(critic_mabac_results, function(df) {
   df[order(df$Score, decreasing = TRUE), ]
@@ -359,15 +354,8 @@ graphic<-ggplot(top10_freq_df, aes(x = reorder(Municipality, Frequency), y = Fre
   theme_minimal() +
   theme(
       plot.title = element_text(size = 16, hjust = 0),
-      #panel.grid = element_blank(),
-      #axis.line = element_line(color = "gray60", size = 0.8),
       axis.text = element_text(size = 12, colour = "black"),
       axis.title = element_text(size = 14),
-      #axis.ticks = element_line(color = "gray60", size = 0.8),
-      #legend.position = "bottom",
-      #legend.title = element_blank(),
-      #legend.text = element_text(size = 14),
-      #legend.key.width = unit(1, "cm"),
       panel.grid = element_blank(),
       axis.line = element_line(color = "gray70", size = 0.6),
       axis.ticks = element_line(color = "gray70", size = 0.6)
@@ -383,7 +371,7 @@ ranking_long <- bind_rows(lapply(seq_along(sorted_critic_mabac_results), functio
            Scenario = i)
 }))
 
-# Filter only the top 10 municipalities that appear most frequently in the Top 10
+# Select the 10 municipalities with the lowest median position (ties broken by the standard deviation)
 top_municipalities <- ranking_long %>%
   group_by(Municipality) %>%
   summarise(
@@ -421,17 +409,9 @@ graphic<-ggplot(filtered_ranking, aes(x = Municipality, y = Position)) +
                      labels = function(x) paste0(x, "º"), limits = c(1,70))+
   scale_x_discrete(limits = rev(levels(factor(filtered_ranking$Municipality))))+
   theme(
-    #axis.text.y = element_text(size = 10),
     plot.title = element_text(size = 16, hjust = 0),
-    #panel.grid = element_blank(),
-    #axis.line = element_line(color = "gray60", size = 0.8),
     axis.text = element_text(size = 12, colour = "black"),
     axis.title = element_text(size = 14),
-    #axis.ticks = element_line(color = "gray60", size = 0.8),
-    #legend.position = "bottom",
-    #legend.title = element_blank(),
-    #legend.text = element_text(size = 14),
-    #legend.key.width = unit(1, "cm")
     panel.grid = element_blank(),
     axis.line = element_line(color = "gray70", size = 0.6),
     axis.ticks = element_line(color = "gray70", size = 0.6)
@@ -450,14 +430,12 @@ for (i in 1:number_scenarios) {
   wind_scenario <- data.frame(sapply(all_fut_scenarios, function(df) df[(((i - 1)*horizon)+1):(i*horizon), 4]))
   colnames(wind_scenario) <- sub("^X", "", colnames(wind_scenario))
 
-  #colnames(wind_scenario) <- paste0("municip", 1:length(all_fut_scenarios))
   wind_scenario <- as.data.frame(t(wind_scenario))
   colnames(wind_scenario) <- paste0("wind_", 1:horizon)
   wind_scenario$Code <- as.numeric(rownames(wind_scenario))
 
   case <- merge(sdg_criteria, wind_scenario, by = "Code", all.x = TRUE)
 
-  #case <- cbind(sdg_criteria, wind_scenario)
   case <- case %>%
     mutate(across(3:21, as.numeric))
 
@@ -498,7 +476,6 @@ for (i in 1:number_scenarios) {
   ########################## MABAC ##############################
 
   # Step 1: Use the normalized decision matrix from the CRITIC method
-  # (Assuming `normalized_criteria` and `critic_weights_2` are available from the previous step)
 
   # Step 2: Compute the weighted matrix
   weighted_matrix <- as.data.frame(sapply(1:ncol(normalized_criteria), function(k) {
@@ -534,7 +511,7 @@ for (i in 1:number_scenarios) {
 critic_weights_2<-readRDS(file.path(indicator_dir, "CRITIC_MABAC", "CRITIC_weights_2.RData"))
 critic_mabac_results_2<-readRDS(file.path(indicator_dir, "CRITIC_MABAC", "CRITIC_MABAC_ranking_2.RData"))
 
-#Sort each dataframe within the list in ascending order of Score
+#Sort each dataframe within the list in descending order of Score
 
 sorted_critic_mabac_results <- lapply(critic_mabac_results_2, function(df) {
   df[order(df$Score, decreasing = TRUE), ]
@@ -547,7 +524,7 @@ ranking_long <- bind_rows(lapply(seq_along(sorted_critic_mabac_results), functio
            Scenario = i)
 }))
 
-# Filter only the top 10 municipalities that appear most frequently in the Top 10
+# Select the 10 municipalities with the lowest median position (ties broken by the standard deviation)
 top_municipalities <- ranking_long %>%
   group_by(Municipality) %>%
   summarise(
@@ -628,7 +605,6 @@ for (i in 1:number_scenarios) {
   ########################## MABAC ##############################
 
   # Step 1: Use the normalized decision matrix from the CRITIC method
-  # (Assuming `normalized_criteria` and `critic_seasonal_weights` are available from the previous step)
 
   # Step 2: Compute the weighted matrix
   weighted_matrix <- as.data.frame(sapply(1:ncol(normalized_criteria), function(k) {
