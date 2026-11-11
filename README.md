@@ -4,9 +4,9 @@ Code, data, and results supporting the paper *"Planning Renewable Energy Futures
 
 ## Data
 
-Hourly wind speeds at 100 m (MERRA-2 reanalysis) from January 1984 to December 2023 were obtained from the Renewables.ninja platform for the coordinates of each municipal center and averaged into monthly means (Section 5.2.1 of the paper and Supplementary Material, Section S4).
+Hourly wind speeds at 100 m (MERRA-2 reanalysis) and the corresponding hourly capacity factors of a Vestas V150-4.0 MW turbine, computed by the platform’s Virtual Wind Farm model, were obtained from the Renewables.ninja platform for the coordinates of each municipal center from January 1984 to December 2023 and averaged into monthly means (Section 5.2.1 of the paper and Supplementary Material, Section S4).
 
-- `00_Data/Raw/Wind_Series/` — monthly mean wind speed series at 100 m, with columns `Date` and `Wind_speed` (one file per municipality, 167 total).
+- `00_Data/Raw/Wind_Series/` — monthly mean wind speed series at 100 m and of the capacity factor of a Vestas V150-4.0 MW turbine, with columns `Date`, `Wind_speed`, and `Capacity_factor` (one file per municipality, 167 total).
 - `00_Data/Processed/TimeSeries.csv` — monthly wind speed series per municipality, output of `01_Pre_proc.R`.
 - `00_Data/Processed/SDG_Criteria.csv` — the seven SDG-related criteria (g1–g7) per municipality.
 
@@ -18,7 +18,7 @@ See `DATA_DICTIONARY.md` for a full description of every variable, including mun
 
 Run the remaining scripts in this order:
 
-1. **`01_Pre_proc.R`** — reads the raw files in `00_Data/Raw/Wind_Series/`, builds the monthly wind speed series, and writes `00_Data/Processed/TimeSeries.csv`.
+1. **`01_Pre_proc.R`** — reads the raw files in `00_Data/Raw/Wind_Series/`, builds the monthly wind speed series, writes `00_Data/Processed/TimeSeries.csv`, and prints the Spearman correlation between the wind-speed and capacity-factor municipality rankings (robustness check for the wind-speed proxy).
 2. **`02_Forecasting.R`** — clusters monthly wind speed into states, estimates transition matrices, and generates 1,000 Monte Carlo scenarios per municipality. Outputs to `01_Modeling_files_output/` and `02_Simulation_files_output/`.
 3. **`03_Indicator.R`** — builds the composite site-selection indicator: CRITIC/Entropy weighting, MABAC/TOPSIS ranking, and the four sensitivity analyses (wind-only indicator, wind-criteria granularity, weighting method, ranking method). Outputs to `03_Indicator_files_output/`.
 4. **`Map/map_ranking.R`** — produces the final ranking maps.
@@ -38,6 +38,7 @@ Run each script either by opening it in RStudio, or from a terminal with `Rscrip
 | Supplementary Figure S1 (state frequencies) | `02_Forecasting.R` | `02_Simulation_files_output/*_Freq.png` |
 | Section 5.2.1 (wind speed statistics and ADF test) and Section 6.1.2 (Kolmogorov-Smirnov test, coverage percentage, correlation MAE) | `02_Forecasting.R` | Printed to the console |
 | Sections 6.2–6.3 (criteria weights, rankings, and sensitivity analyses) | `03_Indicator.R` | Printed to the console; full results in `03_Indicator_files_output/` |
+| Robustness check (wind speed vs. capacity factor ranking) | `01_Pre_proc.R` | Printed to the console |
 
 ## Reproducibility
 

@@ -11,6 +11,14 @@ Every data file is keyed by the official IBGE municipality code.
 | `Code` | 7-digit IBGE municipality code | `00_Data/Processed/SDG_Criteria.csv` |
 | `Municipality` | Municipality name | `00_Data/Processed/SDG_Criteria.csv` |
 
+## Raw wind data
+
+| Variable | Description | Unit | Source |
+|---|---|---|---|
+| `Date` | Month (first day), January 1984 to December 2023 | — | `00_Data/Raw/Wind_Series/*.xlsx` |
+| `Wind_speed` | Monthly mean wind speed at 100 m | m/s | `00_Data/Raw/Wind_Series/*.xlsx`, used by `01_Pre_proc.R` to build `TimeSeries.csv` |
+| `Capacity_factor` | Monthly mean capacity factor for a Vestas V150-4.0 MW turbine at 100 m |   — (0–1)   | `00_Data/Raw/Wind_Series/*.xlsx` |
+
 ## Wind-speed criteria
 
 | Variable | Description | Unit | Source |
@@ -52,4 +60,8 @@ All wind criteria are benefit-type (higher wind speed = better site).
 
 ## Sources
 
+Wind speed and capacity-factor data were obtained from the Renewables.ninja platform, which applies the Virtual Wind Farm model (Staffell and Pfenninger, 2016) to MERRA-2 reanalysis data (NASA) at the coordinates of each municipal center.
+
 SDG-related criteria were compiled from three Brazilian public institutions: the Brazilian Institute of Geography and Statistics (IBGE), the Institute for Sustainable Development and Environment of Rio Grande do Norte (IDEMA), and the Ministry of the Environment and Climate Change (MMA). All data were collected at the municipal level.
+
+

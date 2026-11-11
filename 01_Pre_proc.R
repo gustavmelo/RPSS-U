@@ -83,3 +83,23 @@ colnames(df_final)[3:169] <- ifelse(
 
 # Saves the renamed data frame as a CSV
 write.csv(df_final, file.path(data_dir, "TimeSeries.csv"), row.names = FALSE)
+
+
+### Robustness check: wind speed vs capacity factor (Vestas V150-4.0 MW)
+
+# Reads one raw file and extracts the capacity factor column
+read_fc_file <- function(file_path) {
+  xlsx_data <- read_excel(file.path(file_path))
+  return(xlsx_data[, "Capacity_factor"])
+}
+
+fc_list <- setNames(lapply(files, read_fc_file), file_names)
+
+mean_wind <- sapply(data_list, function(x) mean(x[[1]]))
+mean_fc   <- sapply(fc_list, function(x) mean(x[[1]]))
+
+rank_wind <- rank(-mean_wind)
+rank_fc   <- rank(-mean_fc)
+
+cat("Spearman correlation, municipality ranking by mean wind speed vs mean capacity factor (Vestas V150-4.0MW):\n")
+print(round(cor(rank_wind, rank_fc, method = "spearman"), 4))
